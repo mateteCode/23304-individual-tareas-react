@@ -62,11 +62,28 @@ const logout = () => {
   signOut(auth);
 };
 
-const getTasks = async () => {
-  console.log("Obtener todas las tareas de firebase");
+const getTasks = async (user, setTasks) => {
+  try {
+    const q = query(collection(db, "users"), where("uid", "==", user.uid));
+    const docs = await getDocs(q);
+    const documentRef = doc(db, "users", docs.docs[0].id);
+    const documento = await getDoc(documentRef);
+    if (documento.exists()) {
+      setTasks(documento.data().tasks);
+    }
+  } catch (err) {
+    console.log(err.message);
+  }
 };
 
 const addTask = async (user, task) => {};
+
+const saveTasks = async (user, tasks) => {
+  const q = query(collection(db, "users"), where("uid", "==", user.uid));
+  const docs = await getDocs(q);
+  const documentRef = doc(db, "users", docs.docs[0].id);
+  await updateDoc(documentRef, { tasks: tasks });
+};
 
 const ponerData = async (user) => {
   const q = query(collection(db, "users"), where("uid", "==", user.uid));
@@ -206,4 +223,4 @@ const removeBlocked = async (user, movie) => {
   }
 };
 
-export { auth, db, signInWithGoogle, logout, getTasks, addTask };
+export { auth, db, signInWithGoogle, logout, getTasks, addTask, saveTasks };

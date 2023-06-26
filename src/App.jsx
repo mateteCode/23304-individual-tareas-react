@@ -1,5 +1,5 @@
 import TaskListsBox from "./components/TaskListsBox";
-import { auth, getTasks } from "./api/firebase";
+import { auth, getTasks, saveTasks } from "./api/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useEffect, useState } from "react";
 import FormTask from "./components/FormTask";
@@ -17,15 +17,16 @@ function App() {
 
   useEffect(() => {
     if (authUser) {
-      /* TODO: Cargar todas las tareas desde la db */
-      getTasks();
+      getTasks(authUser, setTasks);
+    } else {
+      setTasks([]);
     }
   }, [authUser]);
 
   useEffect(() => {
-    /* TODO: Salvar todas las tareas a la db*/
-    console.log("cambio las tareas");
-    console.log(tasks);
+    if (authUser) {
+      saveTasks(authUser, tasks);
+    }
   }, [tasks]);
 
   if (authLoading) return <div>Loading...</div>;
