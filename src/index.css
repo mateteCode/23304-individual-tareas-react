@@ -48,6 +48,10 @@ h1 {
 
 .headerMenu a {
   display: block;
+  display: flex;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
   width: 30px;
   height: 30px;
   padding: 0px;

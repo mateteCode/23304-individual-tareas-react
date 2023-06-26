@@ -5,7 +5,10 @@ export default function Task({ task, setFormState, setTasks }) {
     setTasks((prev) => prev.filter((t) => t.id !== task.id));
   };
   return (
-    <div className="task">
+    <div
+      className="task"
+      style={task.color ? { backgroundColor: task.color } : {}}
+    >
       <div className="taskPriority">
         {task.priority && (
           <i className="fa fa-thumb-tack" aria-hidden="true"></i>

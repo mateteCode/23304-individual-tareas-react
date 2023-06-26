@@ -19,7 +19,7 @@ export default function TaskListsBox({
             <>
               <a
                 href="#"
-                className="btn-new-task"
+                className="btn-newtask"
                 onClick={() => setFormState({ action: "newTask" })}
               >
                 <PiNotePencilFill />

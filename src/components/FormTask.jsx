@@ -1,5 +1,6 @@
 import { useState } from "react";
 //import { nanoid } from "nanoid";
+import { generateColor } from "../utils/utils.js";
 
 export default function FormTask({
   formState,
@@ -26,6 +27,7 @@ export default function FormTask({
         idList,
         description,
         priority,
+        color: generateColor(),
       };
       setTasks((prev) => [...prev, newTask]);
     } else if (formState.action === "editTask") {
@@ -34,6 +36,7 @@ export default function FormTask({
         idList,
         description,
         priority,
+        color: formState.task.color,
       };
       setTasks((prev) => {
         const newTasks = prev.map((task) => {
