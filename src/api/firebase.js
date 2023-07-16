@@ -3,9 +3,6 @@ import {
   GoogleAuthProvider,
   getAuth,
   signInWithPopup,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
   signOut,
 } from "firebase/auth";
 
@@ -18,8 +15,6 @@ import {
   addDoc,
   doc,
   updateDoc,
-  arrayUnion,
-  arrayRemove,
   getDoc,
   setDoc,
 } from "firebase/firestore";
@@ -37,6 +32,37 @@ const appFirebase = initializeApp(firebaseConfig);
 const auth = getAuth(appFirebase);
 const db = getFirestore(appFirebase);
 
+/* Funciones privadas */
+const getField = async (col, field, fieldId, id) => {
+  try {
+    const q = query(collection(db, col), where(fieldId, "==", id));
+    const docs = await getDocs(q);
+    const documentRef = doc(db, col, docs.docs[0].id);
+    const documentSnapshot = await getDoc(documentRef);
+    if (documentSnapshot.exists()) {
+      const result = documentSnapshot.data()[field];
+      return result;
+    } else {
+      console.log("No existe el documento");
+    }
+  } catch (err) {
+    console.log("No se puede acceder al campo");
+  }
+  return null;
+};
+
+const setField = async (col, field, fieldId, id, value) => {
+  try {
+    const q = query(collection(db, col), where(fieldId, "==", id));
+    const docs = await getDocs(q);
+    const documentRef = doc(db, col, docs.docs[0].id);
+    setDoc(documentRef, { [field]: value }, { merge: true });
+  } catch (err) {
+    console.log("No se puede guardar en valor en el campo");
+  }
+  return null;
+};
+
 const signInWithGoogle = async () => {
   try {
     const res = await signInWithPopup(auth, new GoogleAuthProvider());
@@ -50,6 +76,8 @@ const signInWithGoogle = async () => {
         authProvider: "google",
         email: user.email,
         tasks: [],
+        city: "Buenos Aires",
+        photo: user.photoURL,
       });
     }
   } catch (err) {
@@ -85,142 +113,22 @@ const saveTasks = async (user, tasks) => {
   await updateDoc(documentRef, { tasks: tasks });
 };
 
-const ponerData = async (user) => {
-  const q = query(collection(db, "users"), where("uid", "==", user.uid));
-  const docs = await getDocs(q);
-  const documentRef = doc(db, "users", docs.docs[0].id);
-  await setDoc(documentRef, { dato: [1, 3, 4], admin: true, edad: 34 });
-  console.log("Dato insertado");
+const getCity = async (userId) => {
+  return await getField("users", "city", "uid", userId);
 };
 
-const logInWithEmailAndPassword = async (email, password) => {
-  try {
-    const res = await signInWithEmailAndPassword(auth, email, password);
-    console.log(res);
-  } catch (err) {
-    console.error(err);
-    alert(err.message);
-  }
+const saveCity = async (userId, city) => {
+  await setField("users", "city", "uid", userId, city);
 };
 
-const registerWithEmailAndPassword = async (name, email, password) => {
-  try {
-    const res = await createUserWithEmailAndPassword(auth, email, password);
-    console.log(res);
-    const user = res.user;
-    await addDoc(collection(db, "users"), {
-      uid: user.uid,
-      name,
-      authProvider: "local",
-      email,
-    });
-  } catch (err) {
-    console.error(err);
-    alert(err.message);
-  }
+export {
+  auth,
+  db,
+  signInWithGoogle,
+  logout,
+  getTasks,
+  addTask,
+  saveTasks,
+  getCity,
+  saveCity,
 };
-
-const sendPasswordReset = async (email) => {
-  try {
-    const res = await sendPasswordResetEmail(auth, email);
-    console.log(res);
-    alert("Password reset link sent!");
-  } catch (err) {
-    console.error(err);
-    alert(err.message);
-  }
-};
-
-const addFavorites = async (user, movie) => {
-  try {
-    const q = query(collection(db, "users"), where("uid", "==", user.uid));
-    const docs = await getDocs(q);
-    const documentRef = doc(db, "users", docs.docs[0].id);
-    await updateDoc(documentRef, {
-      favorites: arrayUnion(movie),
-    });
-    console.log("pelicula agregada");
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-const addBlocked = async (user, movie) => {
-  try {
-    const q = query(collection(db, "users"), where("uid", "==", user.uid));
-    const docs = await getDocs(q);
-    const documentRef = doc(db, "users", docs.docs[0].id);
-    await updateDoc(documentRef, {
-      blocked: arrayUnion(movie),
-    });
-    console.log("pelicula bloqueada");
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-const getFavorites = async (user, setFavorites) => {
-  try {
-    const q = query(collection(db, "users"), where("uid", "==", user.uid));
-    const docs = await getDocs(q);
-    const documentRef = doc(db, "users", docs.docs[0].id);
-    const documentSnapshot = await getDoc(documentRef);
-    if (documentSnapshot.exists()) {
-      const result = documentSnapshot.data().favorites;
-      setFavorites([...result]);
-    } else {
-      // The document doesn't exist
-      console.log("No such document!");
-    }
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-const getBlocked = async (user, setBlocked) => {
-  try {
-    const q = query(collection(db, "users"), where("uid", "==", user.uid));
-    const docs = await getDocs(q);
-    const documentRef = doc(db, "users", docs.docs[0].id);
-    const documentSnapshot = await getDoc(documentRef);
-    if (documentSnapshot.exists()) {
-      const result = documentSnapshot.data().blocked;
-      setBlocked([...result]);
-    } else {
-      // The document doesn't exist
-      console.log("No such document!");
-    }
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-const removeFavorites = async (user, movie) => {
-  try {
-    const q = query(collection(db, "users"), where("uid", "==", user.uid));
-    const docs = await getDocs(q);
-    const documentRef = doc(db, "users", docs.docs[0].id);
-    await updateDoc(documentRef, {
-      favorites: arrayRemove(movie),
-    });
-    console.log("pelicula eliminada de favoritas");
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-const removeBlocked = async (user, movie) => {
-  try {
-    const q = query(collection(db, "users"), where("uid", "==", user.uid));
-    const docs = await getDocs(q);
-    const documentRef = doc(db, "users", docs.docs[0].id);
-    await updateDoc(documentRef, {
-      blocked: arrayRemove(movie),
-    });
-    console.log("pelicula eliminada de bloqueadas");
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-export { auth, db, signInWithGoogle, logout, getTasks, addTask, saveTasks };

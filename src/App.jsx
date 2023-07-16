@@ -1,8 +1,13 @@
 import TaskListsBox from "./components/TaskListsBox";
-import { auth, getTasks, saveTasks } from "./api/firebase";
+import { auth, getTasks, saveTasks, getCity } from "./api/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useEffect, useState } from "react";
 import FormTask from "./components/FormTask";
+
+import Wheather from "./components/Weather";
+import { useAppContext } from "./AppProvider";
+import Popup from "./popups/Popup";
+import Config from "./popups/Config";
 
 function App() {
   const taskListNames = [
@@ -14,11 +19,19 @@ function App() {
   const [authUser, authLoading, authError] = useAuthState(auth);
   const [tasks, setTasks] = useState([]);
   const [formState, setFormState] = useState(null);
+  const { popupConfig, dispatch } = useAppContext();
 
   useEffect(() => {
+    /* TODO: Refactorizar getTasks() */
+    /* TODO: Corregir perdida de tareas */
     if (authUser) {
+      dispatch({ type: "SET_USER", value: authUser });
       getTasks(authUser, setTasks);
+      getCity(authUser.uid).then((city) => {
+        if (city) dispatch({ type: "SET_CITY", value: city });
+      });
     } else {
+      dispatch({ type: "RESET_STATE" });
       setTasks([]);
     }
   }, [authUser]);
@@ -33,6 +46,7 @@ function App() {
 
   return (
     <>
+      <Wheather />
       <TaskListsBox
         tasks={tasks}
         taskListNames={taskListNames}
@@ -48,6 +62,10 @@ function App() {
           setTasks={setTasks}
         />
       )}
+
+      <Popup isActive={popupConfig}>
+        <Config />
+      </Popup>
     </>
   );
 }

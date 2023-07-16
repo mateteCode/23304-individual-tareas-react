@@ -49,7 +49,7 @@ export default function FormTask({
     setFormState(null);
   }
   return (
-    <div className="popup active" id="form-new-task">
+    <div className="popup2 active" id="form-new-task">
       <div className="close-btn" onClick={() => setFormState(null)}>
         &times;
       </div>

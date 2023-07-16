@@ -1,7 +1,9 @@
 import TaskList from "./TaskList";
 import { BsFillPersonXFill, BsFillPersonCheckFill } from "react-icons/bs";
 import { PiNotePencilFill } from "react-icons/pi";
+import { FaGear } from "react-icons/fa6";
 import { signInWithGoogle, logout } from "../api/firebase";
+import { useAppContext } from "../AppProvider";
 
 export default function TaskListsBox({
   tasks,
@@ -10,6 +12,7 @@ export default function TaskListsBox({
   setFormState,
   setTasks,
 }) {
+  const { dispatch } = useAppContext();
   return (
     <div className="container">
       <div className="header">
@@ -17,6 +20,13 @@ export default function TaskListsBox({
         <div className="headerMenu">
           {authUser ? (
             <>
+              <a
+                href="#"
+                className="btn-config"
+                onClick={() => dispatch({ type: "TOGGLE_POPUP_CONFIG" })}
+              >
+                <FaGear />
+              </a>
               <a
                 href="#"
                 className="btn-newtask"
